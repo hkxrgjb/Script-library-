@@ -1,0 +1,453 @@
+-- Here Your Toggle For Kavo Ui
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("مكتبة سكربتات 1.5V", "DarkTheme")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ScreenGui"
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+
+local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
+
+-- إنشاء الزر
+local Toggle = Instance.new("TextButton")
+Toggle.Name = "القائمة"
+Toggle.Parent = ScreenGui
+Toggle.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Toggle.Position = UDim2.new(0, 20, 0.5, -19)
+Toggle.Size = UDim2.new(0, 120, 0, 38)
+Toggle.Font = Enum.Font.SourceSansBold  -- خط عريض يدعم اللغة العربية
+Toggle.Text = "القائمة"
+Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)  -- لون النص أبيض
+Toggle.TextSize = 24.000
+Toggle.Draggable = true
+Toggle.AutoButtonColor = false
+
+-- إضافة زوايا مستديرة
+local Corner = Instance.new("UICorner", Toggle)
+Corner.CornerRadius = UDim.new(0, 8)
+
+-- إضافة ظل للنص
+local TextShadow = Instance.new("UIStroke", Toggle)
+TextShadow.Color = Color3.fromRGB(0, 0, 0)  -- لون الظل أسود
+TextShadow.Thickness = 2  -- سمك الظل
+TextShadow.Transparency = 0.5  -- شفافية الظل
+
+-- تأثيرات تفاعلية
+Toggle.MouseEnter:Connect(function()
+    Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)  -- تغيير لون الخلفية عند التحويم
+    Toggle.TextColor3 = Color3.fromRGB(255, 200, 200)  -- تغيير لون النص عند التحويم
+end)
+
+Toggle.MouseLeave:Connect(function()
+    Toggle.BackgroundColor3 = Color3.fromRGB(25, 25, 25)  -- إعادة لون الخلفية الأصلي
+    Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)  -- إعادة لون النص الأصلي
+end)
+
+Toggle.MouseButton1Click:Connect(function()
+    Toggle.BackgroundColor3 = Color3.fromRGB(75, 75, 75)  -- تغيير لون الخلفية عند النقر
+    Toggle.TextColor3 = Color3.fromRGB(255, 150, 150)  -- تغيير لون النص عند النقر
+    Library:ToggleUI()
+end)
+
+
+
+
+local Corner = Instance.new("UICorner")
+Corner.Name = "Corner"
+Corner.Parent = Toggle
+
+-- Iإنشاء علامات التبويب
+
+local Tab1 = Window:NewTab("مكتبة 1")
+local Tab1Section = Tab1:NewSection("مكتبة 1")
+
+-- Iالسكربت
+
+Tab1Section:NewLabel("سكربت اوتو كليكر")
+
+Tab1Section:NewButton("اوتو كليكر(للاجهزة القوية)", "سكربت يضرب باستخدام السيف تلقائي يعمل فقط على السيف", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%A7%D9%88%D8%AA%D9%88%20%D9%83%D9%84%D9%8A%D9%83%D8%B1"))()
+end)
+
+Tab1Section:NewButton("اوتو كليكر (للاجهزة الضعيفة)", "سكربت يضرب بأستخدام السيف تلقائي يعمل فقط على السيف", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%A7%D9%88%D8%AA%D9%88%20%D9%83%D9%84%D9%8A%D9%83%D8%B1%20(%D9%84%D9%84%D8%A7%D8%AC%D9%87%D8%B2%D8%A9%20%D8%A7%D9%84%D8%B6%D8%B9%D9%8A%D9%81%D8%A9)"))()
+end)
+
+
+Tab1Section:NewLabel("سكربت المربع الازرق (ايم بوت)")
+
+Tab1Section:NewButton("المربع الازرق", "سكربت يضع مربع ازرق على الاعب ايم بوت", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%A7%D9%84%D9%85%D8%B1%D8%A8%D8%B9%20%D8%A7%D9%84%D8%A7%D8%B2%D8%B1%D9%82"))()
+end)
+
+Tab1Section:NewLabel("سكربت القفز الانهائي")
+
+Tab1Section:NewButton("قفز لا نهائي", "الضغط مستمر على القفز", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D9%82%D9%81%D8%B2%20%D9%84%D8%A7%20%D9%86%D9%87%D8%A7%D8%A6%D9%8A"))()
+end)
+
+Tab1Section:NewLabel("سكربت ريتش (فقط للسيوف)")
+
+Tab1Section:NewButton("سكربت ريتش (1)", "سكربت يعمل على السيف يمكنك قتل الاعبين من بعيد", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B1%D9%8A%D8%AA%D8%B4%201"))()
+end)
+
+Tab1Section:NewButton("سكربت ريتش (2)", "سكربت ريتش مختلف", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%B1%D9%8A%D8%AA%D8%B4%202"))()
+end)
+
+Tab1Section:NewButton("سكربت ريتش (3)", "سكربت ريتش قوي مع اوتو كليكر", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%B1%D9%8A%D8%AA%D8%B4%203"))()
+end)
+
+Tab1Section:NewButton("سكربت ريتش (4)", "سكربت ريتش قوي يمكنك تعديل المسافة لا نهائية", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%B1%D9%8A%D8%AA%D8%B4%204"))()
+end)
+
+Tab1Section:NewButton("سكربت ريتش (5)", "سكربت ريتش بوت يعمل مع كيبورد حرف(x)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%B1%D9%8A%D8%AA%D8%B4%205"))()
+end)
+
+Tab1Section:NewButton("سكربت ريتش (6)", "سكربت ريتش فقط امسك السيف", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%B1%D9%8A%D8%AA%D8%B4%206"))()
+end)
+
+Tab1Section:NewButton("سكربت ريتش (7)", "سكربت ريتش صعب ولاكن يعمل", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%B1%D9%8A%D8%AA%D8%B4%207"))()
+end)
+
+Tab1Section:NewLabel("سكربت الكيبورد")
+
+Tab1Section:NewButton("كيبورد", "سكربت كيبورد يعطيك صلاحيات الكمبيوتر", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/advxzivhsjjdhxhsidifvsh/mobkeyboard/main/main.txt", true))()
+end)
+
+Tab1Section:NewLabel("سكربت قفل الشاشة")
+
+Tab1Section:NewButton("سكربت القفل", "سكربت يضع لك القفل في الشاشة", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%A7%D9%84%D9%82%D9%81%D9%84"))()
+end)
+
+Tab1Section:NewLabel("سكربت الادمن")
+
+Tab1Section:NewButton("ادمن قوي", "سكربت ادمن يتيح لك بعض اوامر الادمن", function()
+    print("Clicked")loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+end)
+
+Tab1Section:NewLabel("سكربت السرعة")
+
+Tab1Section:NewButton(" السرعة", "سكربت يغير لك السرعة في اي ماب", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%A7%D9%84%D8%B3%D8%B1%D8%B9%D8%A9"))()
+end)
+
+Tab1Section:NewLabel("سكربت ازالة لاق(تحسين fps)")
+
+Tab1Section:NewButton("ازالة لاق", "سكربت يزيل لاق من الماب", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/CasperFlyModz/discord.gg-rips/main/FPSBooster.lua"))()
+end)
+
+Tab1Section:NewLabel("سكربت الرقصات(يتيح لك جميع الرقصات)")
+
+Tab1Section:NewButton("سكربت رقصات", "سكربت يعطيك جميع الرقصات مجانا", function()
+    print("Clicked")loadstring(game:HttpGet("https://scriptblox.com/raw/Brookhaven-RP-all-emotes-6849"))()
+end)
+
+Tab1Section:NewLabel("سكربت طيران")
+
+Tab1Section:NewButton("طيران", "سكربت طيران يتيح لك الطيران", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%B7%D9%8A%D8%B1%D8%A7%D9%86"))()
+end)
+
+Tab1Section:NewLabel("سكربت التنقل بين الاعبين")
+
+Tab1Section:NewButton("التنقل", "سكربت ينتقل الى الاعب المحدد", function()
+    print("Clicked")loadstring(game:HttpGet('https://raw.githubusercontent.com/Infinity2346/Tect-Menu/main/Teleport%20Gui.lua'))()
+end)
+
+Tab1Section:NewLabel("سكربت عدم الموت")
+
+Tab1Section:NewButton("عدم الموت", "عدم الموت عند الاشياء القاتلة", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/zephyr10101/ignore-touchinterests/main/main",true))()
+end)
+
+Tab1Section:NewLabel("سكربت سحب الاشخاص")
+
+Tab1Section:NewButton("سحب", "سكربت سحب الاشخاص", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%A7%D9%84%D8%B3%D8%AD%D8%A8"))()
+end)
+
+
+-- Iإنشاء علامات التبويب 2
+
+local Tab2 = Window:NewTab("بلوكس فروت")
+local Tab2Section = Tab2:NewSection("سكربتات بلوكس فروت")
+
+Tab2Section:NewLabel("سكربتات بلوكس فروت (بدون مفتاح)")
+
+Tab2Section:NewButton("بلوكس فروت (1)", "سكربت (Min Gaming Hub)", function()
+    print("Clicked")loadstring(game:HttpGet"https://raw.githubusercontent.com/Basicallyy/Basicallyy/main/MinGamingV4.lua")()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (2)", "سكربت (ScriptBlox)", function()
+    print("Clicked")loadstring(game:HttpGet('https://raw.githubusercontent.com/Script-Blox/Script/main/Script-Blox'))()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (3)", "سكربت (Speed Hub X)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (4)", "سكربت (Radon Hub)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/x2-Neptune/RadonHub/main/Script.lua"))()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (5)", "سكربت (Damon Hub)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/daucobonhi/seagame/main/Damonvip.lua"))()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (6)", "سكربت (Fai Fao Hub)", function()
+    print("Clicked")loadstring(game:HttpGet"https://raw.githubusercontent.com/PNguyen0199/Script/main/Fai-Fao-Ver2.lua")()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (7)", "سكربت (redz Hub)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (8)", "سكربت (GI FullW-azure Hub)", function()
+    print("Clicked")loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/3b2169cf53bc6104dabe8e19562e5cc2.lua"))()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (9)", "سكربت (Domadic Hub)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/Domadicoof/Domadicoof/main/Domadichub/NottoGay/Start.ranscript"))()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (10)", "سكربت (Wolf Hub)", function()
+    print("Clicked")loadstring(game:HttpGet('https://link.trwxz.com/LS-Wolf-Hub'))()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (11)", "سكربت (Slimex Hub)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/Slimexiuem/Slimexhub/main/Slimex-hub"))()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (12)", "سكربت (Min XT Hub)", function()
+    print("Clicked")loadstring(game:HttpGet"https://raw.githubusercontent.com/Basicallyy/Basicallyy/main/Min_XT_V2_.lua")() 
+end)
+
+
+Tab2Section:NewLabel("سكربتات بلوكس فروت(مع مفتاح)")
+
+Tab2Section:NewButton("بلوكس فروت (1)", "سكربت (Cokka Hub)", function()
+    print("Clicked")loadstring(game:HttpGet"https://raw.githubusercontent.com/UserDevEthical/Loadstring/main/CokkaHub.lua")()
+end)
+
+Tab2Section:NewButton("بلوكس فروت (2)", "سكربت (Hoho Version V3)", function()
+    print("Clicked")loadstring(game:HttpGet('https://raw.githubusercontent.com/acsu123/HOHO_H/main/Loading_UI'))()
+end)
+
+
+-- Iإنشاء علامات التبويب 3
+
+local Tab3 = Window:NewTab("ماب البيوت")
+local Tab3Section = Tab3:NewSection("ماب البيوت")
+
+
+Tab3Section:NewButton("ماب البيوت (1)", "سكربت (SanderX V3.30)", function()
+    print("Clicked")loadstring(game:HttpGet(('https://raw.githubusercontent.com/sXPiterXs1111/Sanderxv3.30/main/sanderx3.30')))()
+end)
+
+Tab3Section:NewButton("ماب البيوت (2)", "سكربت (REDz HUB)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/REDzHUB/main/REDzHUB"))()
+end)
+
+Tab3Section:NewButton("ماب البيوت (3)", "سكربت (Imperial Hub)", function()
+    print("Clicked")loadstring(game:HttpGet(("https://raw.githubusercontent.com/Trev0rZ/LoaderM/main/ImperialHub-Working.lua"),true))()
+end)
+
+Tab3Section:NewButton("ماب البيوت (4)", "سكربت (VR7 Ragdoll)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/VR7ss/OMK/main/VR7%20RAGDOLL"))()
+end)
+
+
+Tab3Section:NewLabel("سكربت ماب البيوت مراقبة الناس")
+
+Tab3Section:NewButton("ماب البيوت (مراقبة)", "سكربت لمراقبة الاشخاص في ماب البيوت", function()
+    print("Clicked")loadstring(game:HttpGet('https://pastebin.com/raw/wyvdb7gr'))()
+end)
+
+Tab3Section:NewLabel("سكربت ماب البيوت طيران السيارة")
+
+Tab3Section:NewButton("ماب البيوت (طيران السيارة)", "سكربت طيران السيارة ماب البيوت", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hasan08122020108181818/HASA/759cc1030d8a4f4c23b32e8cb8550b47f567d1b9/carflyronald"))()
+end)
+
+
+-- Iإنشاء علامات التبويب 4
+
+local Tab4 = Window:NewTab("mm2")
+local Tab4Section = Tab4:NewSection("سكربتات mm2 (بدون مفتاح)")
+
+
+Tab4Section:NewButton("mm2 (1)", "سكربت (nexus)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/s-o-a-b/nexus/main/loadstring"))()
+end)
+
+Tab4Section:NewButton("mm2 (2)", "سكربت (TPKE ANAS)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/Anashatem/S/main/Cg"))()
+end)
+
+Tab4Section:NewButton("mm2 (3)", "سكربت (XHub 3.7V)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/Au0yX/Community/main/XhubMM2"))()
+end)
+
+Tab4Section:NewButton("mm2 (4)", "سكربت (Lunar.Xyz)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/PotatoesDev/Lunar/main/LunarXyz.lua"))()
+end)
+
+Tab4Section:NewButton("mm2 (5)", "سكربت (Symphony Hub)", function()
+    print("Clicked")loadstring(game:HttpGet('https://raw.githubusercontent.com/ThatSick/ArrayField/main/SymphonyHub.lua'))()
+end)
+
+Tab4Section:NewButton("mm2 (6)", "سكربت (R3TH PRIV)", function()
+    print("Clicked")loadstring(game:HttpGet('https://raw.githubusercontent.com/R3TH-PRIV/R3THPRIV/main/loader.lua'))()
+end)
+
+Tab4Section:NewButton("mm2 (7)", "سكربت (Vynixu's)", function()
+    print("Clicked")loadstring(game:GetObjects("rbxassetid://4001118261")[1].Source)()
+end)
+
+
+Tab4Section:NewLabel("mm2 (مع مفتاح)")
+
+Tab4Section:NewButton("mm2 (1)", "سكربت (Overdrive 0.6V)", function()
+    print("Clicked")loadstring(game:HttpGet("https://overdrive-h.ohd.workers.dev/?d=loader"))()
+end)
+
+--Iانشاء علامات التبويب 5
+
+local Tab5 = Window:NewTab("The Strongest")
+local Tab5Section = Tab5:NewSection("سكربتات The Strongest")
+
+
+Tab5Section:NewButton("سكربت (1)", "(ray makk)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/JayXSama/ray-makk/main/Loader"))()
+end)
+
+Tab5Section:NewButton("سكربت (2)", "(Combat kill tpbring)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/Scripterbacon/TSBobfuscator/main/Main.Lua"))()
+end)
+
+Tab5Section:NewLabel("سكربتات(مع مفتاح)")
+--I سكربتات مع مفتاح
+
+Tab5Section:NewButton("سكربت (3)", "(Zenon Super W.L.P)", function()
+    print("Clicked")loadstring(game:HttpGet("https://pastefy.app/gbwEzNX4/raw"))()
+end)
+
+Tab5Section:NewButton("سكربت (4)", "(NS HUI)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/HenSeu87PofghYT/ALL-IN-ONE/main/NSHUBV2"))()
+end)
+
+Tab5Section:NewButton("سكربت اوتو ايم", "سكربت يأشر على لاعب تلقائي", function()
+    print("Clicked")loadstring(game:HttpGet('https://raw.githubusercontent.com/tapboundcc/tapbound/main/camlock/by%20%23xvsfi'))()
+end)
+
+--I انشاء علامة تبويب (6)
+
+local Tab6 = Window:NewTab("تخريب")
+local Tab6Section = Tab6:NewSection("تخريب جميع مابات")
+
+
+Tab6Section:NewLabel("سكربتات fling لاعب واحد")
+
+Tab6Section:NewButton("تخريب (1)", "تخريب طيران الاعب", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20fling%201"))()
+end)
+
+Tab6Section:NewButton("تخريب (2)", "تخريب طيران الاعب واحد", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20fling%202"))()
+end)
+
+Tab6Section:NewButton("تخريب (3)", "تخريب طيران لاعب واحد", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20fling%203"))()
+end)
+
+
+Tab6Section:NewLabel("سكربتات fling الجميع")
+
+Tab6Section:NewButton("تخريب (1)", "طيران الجميع", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%B7%D9%8A%D8%B1%D8%A7%D9%86%20%D8%A7%D9%84%D8%AC%D9%85%D9%8A%D8%B9"))()
+end)
+
+Tab6Section:NewButton("تخريب (2)", "طيران الجميع (2)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%B7%D9%8A%D8%B1%D8%A7%D9%86%20%D8%A7%D9%84%D8%AC%D9%85%D9%8A%D8%B9%202"))()
+end)
+
+Tab6Section:NewButton("تخريب (3)", "طيران الجميع (3)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20%D8%B7%D9%8A%D8%B1%D8%A7%D9%86%20%D8%A7%D9%84%D8%AC%D9%85%D9%8A%D8%B9%203"))()
+end)
+
+
+Tab6Section:NewLabel("سكربتات fling عند المس")
+
+
+Tab6Section:NewButton("تخريب (1)", "طيران الاعب عند لمسه", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/hkxrgjb/Script-library/main/%D8%B3%D9%83%D8%B1%D8%A8%D8%AA%20fling%20%D8%B9%D9%86%D8%AF%20%D8%A7%D9%84%D9%85%D8%B3"))()
+end)
+
+Tab6Section:NewButton("تخريب (2)", "طيران الاعب عند لمسه", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/0Ben1/fe./main/Fling%20GUI"))()
+end)
+
+
+
+local Tab7 = Window:NewTab("Build A Boat")
+local Tab7Section = Tab7:NewSection("سكربت ماب (Build A Boat For Treasure)")
+
+
+Tab7Section:NewButton("سكربت (1)", "سكربت (Treasure.exe)", function()
+    print("Clicked")loadstring(game:HttpGet('https://raw.githubusercontent.com/XRoLLu/UWU/main/BUILD%20A%20BOAT%20FOR%20TREASURE.lua'))()
+end)
+
+Tab7Section:NewButton("سكربت (2)", "سكربت (المفتاح N-161803)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/novakoolhub/Scripts/main/Scripts/NovBoatR1"))()
+end)
+
+Tab7Section:NewButton("ButtonText", "ButtonInfo", function()
+    print("Clicked")
+end)
+
+Tab7Section:NewButton("ButtonText", "ButtonInfo", function()
+    print("Clicked")
+end)
+
+local Tab8 = Window:NewTab("Lumber Tycoon 2")
+
+local Tab8Section = Tab8:NewSection("سكربتات ماب (Lumber Tycoon 2)")
+
+Tab8Section:NewButton("سكربت (1)", "سكربت(BUTTER V3)", function()
+    print("Clicked")loadstring(game:HttpGet('https://raw.githubusercontent.com/Butterisgood/Butter/main/Butter%20V3%20Testers.txt'))("early access")
+wait(1)
+loadstring(game:HttpGet('https://raw.githubusercontent.com/Butterisgood/Butter-Cuties/main/Other/Maid'))("early access")
+end)
+
+Tab8Section:NewButton("سكربت (2)", "سكربت (LuaWare V4.3)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/frencaliber/LuaWareLoader.lw/main/luawareloader.wtf",true))()("JoinDiscordForGiveAwaysAndUpdates")
+end)
+
+Tab8Section:NewButton("سكربت (3)", "سكربت (Kron Hub)", function()
+    print("Clicked")loadstring(game:HttpGet('https://raw.githubusercontent.com/DevKron/Kron_Hub/refs/heads/main/version_1.0'))("")
+end)
+
+Tab8Section:NewButton("سكربت (4)", "سكربت (Butter)", function()
+    print("Clicked")loadstring(game:HttpGet('https://raw.githubusercontent.com/Butterisgood/Butter/main/Root2.lua'))("")
+end)
+
+Tab8Section:NewButton("سكربت (5)", "سكربت (darkx crack)", function()
+    print("Clicked")loadstring(game:HttpGet("https://raw.githubusercontent.com/x0x37x/darkx-crack/refs/heads/main/crack.lua"))()
+end)
+
+Tab8Section:NewButton("سكربت (6)", "سكربت (", function()
+    print("Clicked")
+end)
