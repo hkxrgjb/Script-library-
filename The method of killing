@@ -1,0 +1,407 @@
+--// المتغيرات \\--
+local player = game:GetService("Players").LocalPlayer
+local runService = game:GetService("RunService")
+local targetPlayer = nil -- اللاعب المستهدف
+local originalPosition = nil -- الموقع الأصلي للاعب
+local toggle = false -- حالة تشغيل/إطفاء السكربت
+local killMethod = "Behind" -- طريقة القتل الافتراضية (خلف اللاعب)
+local range = 50 -- المدى الافتراضي
+local rangeBox = nil -- مربع المدى
+
+-- منطقة المربع المحدد
+local safeZoneMin = Vector3.new(-40.51, 3.23, -41.38)
+local safeZoneMax = Vector3.new(40.59, 3.23, 40.56)
+
+--// واجهة المستخدم \\--
+local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+ScreenGui.ResetOnSpawn = false -- منع إعادة تعيين الواجهة عند إعادة ظهور اللاعب
+
+-- إطار القائمة
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 250, 0, 200) -- الحجم الطبيعي للقائمة
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -100)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25) -- خلفية داكنة
+MainFrame.BorderSizePixel = 0
+MainFrame.Draggable = true -- يمكن تحريك القائمة
+MainFrame.Active = true
+MainFrame.ClipsDescendants = true -- منع ظهور العناصر خارج حدود الإطار
+
+-- ظل الإطار
+local FrameShadow = Instance.new("ImageLabel", MainFrame)
+FrameShadow.Size = UDim2.new(1, 10, 1, 10)
+FrameShadow.Position = UDim2.new(0, -5, 0, -5)
+FrameShadow.BackgroundTransparency = 1
+FrameShadow.Image = "rbxassetid://5234388158" -- ظل ناعم
+FrameShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+FrameShadow.ScaleType = Enum.ScaleType.Slice
+FrameShadow.SliceCenter = Rect.new(10, 10, 118, 118)
+
+-- عنوان القائمة
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35) -- لون داكن للعناوين
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+Title.Text = "سكربت القتل"
+Title.BorderSizePixel = 0
+
+-- زر تصغير/استعادة الواجهة (Minimize/Restore)
+local isMinimized = false
+local MinimizeButton = Instance.new("TextButton", MainFrame)
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(1, -60, 0, 0)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.TextSize = 14
+MinimizeButton.Text = "-"  -- تظهر علامة (-) في الحجم الطبيعي
+MinimizeButton.BorderSizePixel = 0
+MinimizeButton.AutoButtonColor = false
+
+MinimizeButton.MouseButton1Click:Connect(function()
+    if isMinimized then
+        MainFrame:TweenSize(UDim2.new(0, 250, 0, 200), "Out", "Quad", 0.3, true)
+        MinimizeButton.Text = "-"  -- علامة (-) تعود للحجم الطبيعي
+        isMinimized = false
+    else
+        MainFrame:TweenSize(UDim2.new(0, 250, 0, 30), "Out", "Quad", 0.3, true)
+        MinimizeButton.Text = "+"  -- علامة (+) لاستعادة الحجم الطبيعي
+        isMinimized = true
+    end
+end)
+
+-- زر إغلاق القائمة
+local CloseButton = Instance.new("TextButton", MainFrame)
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -30, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 16
+CloseButton.Text = "X"
+CloseButton.BorderSizePixel = 0
+CloseButton.AutoButtonColor = false
+
+CloseButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+end)
+
+-- مربع المدى
+local RangeBox = Instance.new("Frame", MainFrame)
+RangeBox.Size = UDim2.new(0, 100, 0, 20)
+RangeBox.Position = UDim2.new(0.5, -50, 0, 40)
+RangeBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+RangeBox.BorderSizePixel = 0
+
+-- نص المدى
+local RangeText = Instance.new("TextLabel", RangeBox)
+RangeText.Size = UDim2.new(1, 0, 1, 0)
+RangeText.Position = UDim2.new(0, 0, 0, 0)
+RangeText.BackgroundTransparency = 1
+RangeText.TextColor3 = Color3.fromRGB(255, 255, 255)
+RangeText.Font = Enum.Font.Gotham
+RangeText.TextSize = 14
+RangeText.Text = "المدى: " .. range
+RangeText.TextXAlignment = Enum.TextXAlignment.Center
+
+-- زر زيادة المدى
+local IncreaseRangeButton = Instance.new("TextButton", MainFrame)
+IncreaseRangeButton.Size = UDim2.new(0, 30, 0, 20)
+IncreaseRangeButton.Position = UDim2.new(0.5, 60, 0, 40)
+IncreaseRangeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+IncreaseRangeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+IncreaseRangeButton.Font = Enum.Font.Gotham
+IncreaseRangeButton.TextSize = 14
+IncreaseRangeButton.Text = "+"
+IncreaseRangeButton.BorderSizePixel = 0
+IncreaseRangeButton.AutoButtonColor = false
+
+-- زر تقليل المدى
+local DecreaseRangeButton = Instance.new("TextButton", MainFrame)
+DecreaseRangeButton.Size = UDim2.new(0, 30, 0, 20)
+DecreaseRangeButton.Position = UDim2.new(0.5, -90, 0, 40)
+DecreaseRangeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+DecreaseRangeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+DecreaseRangeButton.Font = Enum.Font.Gotham
+DecreaseRangeButton.TextSize = 14
+DecreaseRangeButton.Text = "-"
+DecreaseRangeButton.BorderSizePixel = 0
+DecreaseRangeButton.AutoButtonColor = false
+
+-- زر تشغيل/إطفاء السكربت
+local ToggleButton = Instance.new("TextButton", MainFrame)
+ToggleButton.Size = UDim2.new(0, 220, 0, 30)
+ToggleButton.Position = UDim2.new(0.5, -110, 0, 70)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 16
+ToggleButton.Text = "تشغيل"
+ToggleButton.BorderSizePixel = 0
+ToggleButton.AutoButtonColor = false
+
+-- قائمة طرق القتل
+local KillMethodFrame = Instance.new("Frame", MainFrame)
+KillMethodFrame.Size = UDim2.new(0, 220, 0, 50)
+KillMethodFrame.Position = UDim2.new(0.5, -110, 0, 110)
+KillMethodFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+KillMethodFrame.BorderSizePixel = 0
+
+-- عنوان طرق القتل
+local KillMethodTitle = Instance.new("TextLabel", KillMethodFrame)
+KillMethodTitle.Size = UDim2.new(1, 0, 0, 20)
+KillMethodTitle.Position = UDim2.new(0, 0, 0, 0)
+KillMethodTitle.BackgroundTransparency = 1
+KillMethodTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+KillMethodTitle.Font = Enum.Font.Gotham
+KillMethodTitle.TextSize = 14
+KillMethodTitle.Text = "طريقة القتل:"
+KillMethodTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+-- زر طريقة القتل الأولى (خلف اللاعب)
+local Method1Button = Instance.new("TextButton", KillMethodFrame)
+Method1Button.Size = UDim2.new(0, 100, 0, 20)
+Method1Button.Position = UDim2.new(0, 5, 0, 25)
+Method1Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Method1Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+Method1Button.Font = Enum.Font.Gotham
+Method1Button.TextSize = 14
+Method1Button.Text = "خلف اللاعب"
+Method1Button.BorderSizePixel = 0
+Method1Button.AutoButtonColor = false
+
+-- زر طريقة القتل الثانية (فوق الرأس)
+local Method2Button = Instance.new("TextButton", KillMethodFrame)
+Method2Button.Size = UDim2.new(0, 100, 0, 20)
+Method2Button.Position = UDim2.new(1, -105, 0, 25)
+Method2Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Method2Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+Method2Button.Font = Enum.Font.Gotham
+Method2Button.TextSize = 14
+Method2Button.Text = "فوق الرأس"
+Method2Button.BorderSizePixel = 0
+Method2Button.AutoButtonColor = false
+
+-- زر طريقة القتل الثالثة (تحت ثم فوق)
+local Method3Button = Instance.new("TextButton", KillMethodFrame)
+Method3Button.Size = UDim2.new(0, 100, 0, 20)
+Method3Button.Position = UDim2.new(0.5, -50, 0, 50)
+Method3Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Method3Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+Method3Button.Font = Enum.Font.Gotham
+Method3Button.TextSize = 14
+Method3Button.Text = "تحت ثم فوق"
+Method3Button.BorderSizePixel = 0
+Method3Button.AutoButtonColor = false
+
+-- وظيفة تغيير طريقة القتل
+Method1Button.MouseButton1Click:Connect(function()
+    killMethod = "Behind"
+    Method1Button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    Method2Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Method3Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+end)
+
+Method2Button.MouseButton1Click:Connect(function()
+    killMethod = "Above"
+    Method2Button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    Method1Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Method3Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+end)
+
+Method3Button.MouseButton1Click:Connect(function()
+    killMethod = "UnderThenAbove"
+    Method3Button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    Method1Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Method2Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+end)
+
+-- وظيفة تعديل المدى
+IncreaseRangeButton.MouseButton1Click:Connect(function()
+    range = range + 5
+    RangeText.Text = "المدى: " .. range
+end)
+
+DecreaseRangeButton.MouseButton1Click:Connect(function()
+    range = math.max(5, range - 5) -- التأكد من أن المدى لا يقل عن 5
+    RangeText.Text = "المدى: " .. range
+end)
+
+-- وظيفة تشغيل/إطفاء السكربت
+ToggleButton.MouseButton1Click:Connect(function()
+    toggle = not toggle
+    ToggleButton.Text = toggle and "إطفاء" or "تشغيل"
+    ToggleButton.BackgroundColor3 = toggle and Color3.fromRGB(200, 50, 50) or Color3.fromRGB(50, 50, 50)
+
+    -- إظهار أو إزالة مربع المدى عند التشغيل/الإيقاف
+    if toggle then
+        createRangeBox()
+    else
+        destroyRangeBox()
+        -- استعادة الموقع الأصلي إذا تم إيقاف الهجوم
+        if originalPosition then
+            player.Character.HumanoidRootPart.CFrame = originalPosition
+            originalPosition = nil
+        end
+    end
+end)
+
+-- إنشاء مربع المدى (عرض الزوايا فقط)
+local function createRangeBox()
+    if rangeBox then return end
+
+    rangeBox = Instance.new("Part", workspace)
+    rangeBox.Size = Vector3.new(range * 2, 1, range * 2)
+    rangeBox.Position = player.Character.HumanoidRootPart.Position
+    rangeBox.Anchored = true
+    rangeBox.Transparency = 0.7
+    rangeBox.Color = Color3.fromRGB(0, 255, 0)
+    rangeBox.CanCollide = false
+    rangeBox.Material = Enum.Material.Neon
+
+    -- إنشاء الزوايا فقط
+    for i = 1, 4 do
+        local corner = Instance.new("Part", rangeBox)
+        corner.Size = Vector3.new(1, 1, 1)
+        corner.Anchored = true
+        corner.Transparency = 0
+        corner.Color = Color3.fromRGB(0, 255, 0)
+        corner.Material = Enum.Material.Neon
+        corner.CFrame = rangeBox.CFrame * CFrame.new(
+            (i == 1 or i == 4) and range or -range,
+            0,
+            (i == 1 or i == 2) and range or -range
+        )
+    end
+end
+
+-- إزالة مربع المدى
+local function destroyRangeBox()
+    if rangeBox then
+        rangeBox:Destroy()
+        rangeBox = nil
+    end
+end
+
+-- التحقق من وجود اللاعب داخل المنطقة الآمنة
+local function isInSafeZone(position)
+    return position.X >= safeZoneMin.X and position.X <= safeZoneMax.X and
+           position.Z >= safeZoneMin.Z and position.Z <= safeZoneMax.Z
+end
+
+-- التحقق من امتلاك اللاعب للأداة (Tool) أو التقاطها تلقائيًا
+local function ensureTool()
+    if not player.Character then return false end
+
+    local tool = player.Character:FindFirstChildOfClass("Tool")
+    if tool then return true end
+
+    -- البحث عن أداة في الحقيبة (Backpack)
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        tool = backpack:FindFirstChildOfClass("Tool")
+        if tool then
+            tool.Parent = player.Character
+            return true
+        end
+    end
+
+    print("لم يتم العثور على أداة (Tool)!")
+    return false
+end
+
+-- التحقق من إمكانية مهاجمة اللاعب المستهدف
+local function canAttack(target)
+    if not target.Character then return false end
+    local humanoid = target.Character:FindFirstChild("Humanoid")
+    return humanoid and humanoid.Health > 0
+end
+
+-- العثور على أقرب لاعب
+local function findClosestPlayer()
+    local closestPlayer = nil
+    local closestDistance = math.huge
+
+    local players = game.Players:GetPlayers()
+    for _, target in ipairs(players) do
+        if target ~= player and canAttack(target) then
+            local rootPart = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+            if rootPart then
+                local distance = (rootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                if distance <= range and not isInSafeZone(rootPart.Position) and distance < closestDistance then
+                    closestPlayer = target
+                    closestDistance = distance
+                end
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+-- الانتقال إلى اللاعب المستهدف وتنفيذ الهجوم
+local function attackTarget(target)
+    if not ensureTool() then
+        print("الرجاء حمل أداة (Tool) أولاً!")
+        return
+    end
+
+    local tool = player.Character:FindFirstChildOfClass("Tool")
+    if not tool or not tool:FindFirstChild("Handle") then
+        print("الرجاء حمل أداة (Tool) أولاً!")
+        return
+    end
+
+    -- حفظ الموقع الأصلي
+    originalPosition = player.Character.HumanoidRootPart.CFrame
+
+    -- الحصول على رأس اللاعب المستهدف
+    local targetHead = target.Character:FindFirstChild("Head")
+    if not targetHead then
+        print("لا يمكن العثور على رأس اللاعب المستهدف!")
+        return
+    end
+
+    -- الانتقال إلى موقع اللاعب المستهدف بحسب طريقة القتل
+    if killMethod == "Behind" then
+        local offset = targetHead.CFrame.LookVector * -3
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(targetHead.Position + offset)
+    elseif killMethod == "Above" then
+        local offset = Vector3.new(0, 10, 0)
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(targetHead.Position + offset)
+    elseif killMethod == "UnderThenAbove" then
+        local offset = Vector3.new(0, -8, 0)
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(targetHead.Position + offset)
+    end
+
+    -- تنفيذ الهجوم عبر تفعيل الأداة والاتصال بجميع أجزاء اللاعب المستهدف
+    while canAttack(target) and toggle do
+        tool:Activate()
+        for _, part in ipairs(target.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                firetouchinterest(tool.Handle, part, 0)
+                firetouchinterest(tool.Handle, part, 1)
+            end
+        end
+        wait(0.1)
+    end
+
+    -- العودة إلى الموقع الأصلي بعد انتهاء الهجوم
+    if originalPosition then
+        player.Character.HumanoidRootPart.CFrame = originalPosition
+        originalPosition = nil
+    end
+end
+
+-- التحقق من وجود لاعبين ضمن المدى في كل إطار
+runService.RenderStepped:Connect(function()
+    if toggle then
+        local closestPlayer = findClosestPlayer()
+        if closestPlayer then
+            attackTarget(closestPlayer)
+        end
+    end
+end)
