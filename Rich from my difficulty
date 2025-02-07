@@ -1,0 +1,138 @@
+--// الإعدادات \\--
+local range = 15 -- المدى الافتراضي
+local toggle = false -- حالة السكربت (معطل افتراضيًا)
+local rangeBox = nil -- المربع ثلاثي الأبعاد
+local isMinimized = false -- حالة القائمة (غير مصغرة افتراضيًا)
+local rangeOffset = 1 -- زيادة سرية في المدى
+
+--// المتغيرات \\--
+local player = game:GetService("Players").LocalPlayer
+local runService = game:GetService("RunService")
+
+--// واجهة المستخدم \\--
+local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 300, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Draggable = true
+MainFrame.Active = true
+MainFrame.ClipsDescendants = true
+
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 22
+Title.Text = "إعدادات السكربت"
+Title.BorderSizePixel = 0
+
+local ToggleButton = Instance.new("TextButton", MainFrame)
+ToggleButton.Size = UDim2.new(0, 260, 0, 50)
+ToggleButton.Position = UDim2.new(0.5, -130, 0, 60)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 18
+ToggleButton.Text = "تشغيل السكربت"
+ToggleButton.BorderSizePixel = 0
+
+local RangeInput = Instance.new("TextBox", MainFrame)
+RangeInput.Size = UDim2.new(0, 260, 0, 40)
+RangeInput.Position = UDim2.new(0.5, -130, 0, 120)
+RangeInput.PlaceholderText = "اكتب المدى هنا"
+RangeInput.Text = tostring(range)
+RangeInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+RangeInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+RangeInput.Font = Enum.Font.Gotham
+RangeInput.TextSize = 18
+RangeInput.ClearTextOnFocus = false
+RangeInput.TextXAlignment = Enum.TextXAlignment.Center
+
+local function createRangeBox()
+    local box = Instance.new("Part")
+    box.Size = Vector3.new((range + rangeOffset) * 2, 1, (range + rangeOffset) * 2)
+    box.Anchored = true
+    box.CanCollide = false
+    box.Transparency = 1
+
+    local selectionBox = Instance.new("SelectionBox", box)
+    selectionBox.Adornee = box
+    selectionBox.LineThickness = 0.05
+    selectionBox.Color3 = Color3.fromRGB(0, 255, 0)
+    return box
+end
+
+runService.Heartbeat:Connect(function()
+    if rangeBox and toggle and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local root = player.Character.HumanoidRootPart
+        rangeBox.CFrame = root.CFrame
+        rangeBox.Size = Vector3.new((range + rangeOffset) * 2, 1, (range + rangeOffset) * 2)
+    end
+end)
+
+ToggleButton.MouseButton1Click:Connect(function()
+    toggle = not toggle
+    ToggleButton.Text = toggle and "إيقاف السكربت" or "تشغيل السكربت"
+    ToggleButton.BackgroundColor3 = toggle and Color3.fromRGB(250, 50, 50) or Color3.fromRGB(50, 150, 250)
+
+    if toggle then
+        if not rangeBox then
+            rangeBox = createRangeBox()
+            rangeBox.Parent = game.Workspace
+        end
+    else
+        if rangeBox then
+            rangeBox:Destroy()
+            rangeBox = nil
+        end
+    end
+end)
+
+RangeInput.FocusLost:Connect(function()
+    local newRange = tonumber(RangeInput.Text)
+    if newRange and newRange > 0 then
+        range = newRange
+    else
+        RangeInput.Text = tostring(range)
+    end
+end)
+
+runService.Heartbeat:Connect(function()
+    if not toggle then return end
+
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if root then
+        local rangeBoxSize = Vector3.new((range + rangeOffset) * 2, 5, (range + rangeOffset) * 2)
+        local enemies = workspace:GetPartBoundsInBox(root.CFrame, rangeBoxSize)
+
+        for _, part in ipairs(enemies) do
+            local enemyChar = part.Parent
+            if enemyChar and enemyChar:IsA("Model") and enemyChar ~= player.Character then
+                local humanoid = enemyChar:FindFirstChildOfClass("Humanoid")
+                if humanoid and humanoid.Health > 0 then
+                    local tool = player.Character:FindFirstChildOfClass("Tool")
+                    if tool and tool:FindFirstChild("Handle") then
+                        tool:Activate()
+                        firetouchinterest(tool.Handle, part, 0)
+                        firetouchinterest(tool.Handle, part, 1)
+                        task.wait(0.05)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+player.CharacterAdded:Connect(function()
+    ScreenGui.Parent = player:WaitForChild("PlayerGui")
+    if rangeBox then
+        rangeBox.Parent = game.Workspace
+    end
+end)
