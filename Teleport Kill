@@ -1,0 +1,292 @@
+--// المتغيرات \--
+local player = game:GetService("Players").LocalPlayer
+local runService = game:GetService("RunService")
+local targetPlayer = nil -- اللاعب المستهدف
+local originalPosition = nil -- الموقع الأصلي للاعب
+local isMinimized = false -- حالة تصغير القائمة
+
+-- منطقة المربع المحدد
+local safeZoneMin = Vector3.new(-40.51, 3.23, -41.38)
+local safeZoneMax = Vector3.new(40.59, 3.23, 40.56)
+
+--// واجهة المستخدم \--
+local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+ScreenGui.ResetOnSpawn = false -- منع إعادة تعيين الواجهة عند إعادة ظهور اللاعب
+
+-- إطار القائمة
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 250, 0, 300) -- حجم أصغر
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25) -- لون خلفية داكن
+MainFrame.BorderSizePixel = 0
+MainFrame.Draggable = true -- يمكن تحريك القائمة
+MainFrame.Active = true
+MainFrame.ClipsDescendants = true -- منع تجاوز العناصر لحدود الإطار
+
+-- ظل الإطار
+local FrameShadow = Instance.new("ImageLabel", MainFrame)
+FrameShadow.Size = UDim2.new(1, 10, 1, 10)
+FrameShadow.Position = UDim2.new(0, -5, 0, -5)
+FrameShadow.BackgroundTransparency = 1
+FrameShadow.Image = "rbxassetid://5234388158" -- ظل ناعم
+FrameShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+FrameShadow.ScaleType = Enum.ScaleType.Slice
+FrameShadow.SliceCenter = Rect.new(10, 10, 118, 118)
+
+-- عنوان القائمة
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35) -- لون داكن
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold -- خط جميل
+Title.TextSize = 18
+Title.Text = "قائمة اللاعبين"
+Title.BorderSizePixel = 0
+
+-- زر التصغير/التكبير
+local MinimizeButton = Instance.new("TextButton", MainFrame)
+MinimizeButton.Size = UDim2.new(0, 25, 0, 25)
+MinimizeButton.Position = UDim2.new(1, -30, 0, 5) -- مكان الزر أعلى اليمين
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.TextSize = 18
+MinimizeButton.Text = "-"
+MinimizeButton.BorderSizePixel = 0
+MinimizeButton.AutoButtonColor = false
+
+-- قائمة اللاعبين
+local PlayerList = Instance.new("ScrollingFrame", MainFrame)
+PlayerList.Size = UDim2.new(1, -10, 1, -120) -- تعديل الارتفاع
+PlayerList.Position = UDim2.new(0, 5, 0, 40)
+PlayerList.BackgroundColor3 = Color3.fromRGB(35, 35, 35) -- لون داكن
+PlayerList.BorderSizePixel = 0
+PlayerList.ScrollBarThickness = 5
+
+-- إطار عرض اللاعب المحدد
+local SelectedPlayerFrame = Instance.new("Frame", MainFrame)
+SelectedPlayerFrame.Size = UDim2.new(1, -10, 0, 25) -- تصغير الارتفاع
+SelectedPlayerFrame.Position = UDim2.new(0, 5, 0, 5)
+SelectedPlayerFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45) -- لون داكن
+SelectedPlayerFrame.BorderSizePixel = 0
+
+-- نص اسم اللاعب المحدد
+local SelectedPlayerText = Instance.new("TextLabel", SelectedPlayerFrame)
+SelectedPlayerText.Size = UDim2.new(1, 0, 1, 0)
+SelectedPlayerText.Position = UDim2.new(0, 0, 0, 0)
+SelectedPlayerText.BackgroundTransparency = 1
+SelectedPlayerText.TextColor3 = Color3.fromRGB(255, 255, 255)
+SelectedPlayerText.Font = Enum.Font.Gotham
+SelectedPlayerText.TextSize = 12 -- تصغير حجم النص
+SelectedPlayerText.Text = "لم يتم اختيار لاعب"
+SelectedPlayerText.TextXAlignment = Enum.TextXAlignment.Center
+
+-- زر القتل
+local KillButton = Instance.new("TextButton", MainFrame)
+KillButton.Size = UDim2.new(0, 220, 0, 30)
+KillButton.Position = UDim2.new(0.5, -110, 1, -40) -- تعديل الموضع
+KillButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- لون أحمر داكن
+KillButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+KillButton.Font = Enum.Font.GothamBold
+KillButton.TextSize = 16
+KillButton.Text = "قتل"
+KillButton.BorderSizePixel = 0
+KillButton.AutoButtonColor = false
+
+-- زر الإغلاق
+local CloseButton = Instance.new("TextButton", MainFrame)
+CloseButton.Size = UDim2.new(0, 220, 0, 30)
+CloseButton.Position = UDim2.new(0.5, -110, 1, -80) -- تعديل الموضع
+CloseButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- لون داكن
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 16
+CloseButton.Text = "إغلاق"
+CloseButton.BorderSizePixel = 0
+CloseButton.AutoButtonColor = false
+
+-- علامة على رأس اللاعب المحدد
+local highlight = Instance.new("BoxHandleAdornment")
+highlight.Size = Vector3.new(3, 5, 3)
+highlight.Color3 = Color3.fromRGB(0, 255, 0)
+highlight.Transparency = 0.5
+highlight.Adornee = nil
+highlight.ZIndex = 10
+highlight.Parent = player.PlayerGui
+
+-- وظيفة تصغير/تكبير القائمة
+MinimizeButton.MouseButton1Click:Connect(function()
+    if isMinimized then
+        -- تكبير القائمة
+        MainFrame.Size = UDim2.new(0, 250, 0, 300)
+        MinimizeButton.Text = "-"
+        PlayerList.Visible = true
+        SelectedPlayerFrame.Visible = true
+        KillButton.Visible = true
+        CloseButton.Visible = true
+        isMinimized = false
+    else
+        -- تصغير القائمة
+        MainFrame.Size = UDim2.new(0, 250, 0, 40)
+        MinimizeButton.Text = "+"
+        PlayerList.Visible = false
+        SelectedPlayerFrame.Visible = false
+        KillButton.Visible = false
+        CloseButton.Visible = false
+        isMinimized = true
+    end
+end)
+
+-- وظيفة إغلاق القائمة
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy() -- إغلاق الواجهة
+end)
+
+-- التحقق من امتلاك الأداة (Tool) أو التقاطها تلقائيًا
+local function ensureTool()
+    if not player.Character then return false end
+
+    local tool = player.Character:FindFirstChildOfClass("Tool")
+    if tool then return true end
+
+    -- البحث عن أداة في المخزون
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        tool = backpack:FindFirstChildOfClass("Tool")
+        if tool then
+            tool.Parent = player.Character
+            return true
+        end
+    end
+
+    print("لم يتم العثور على أداة (Tool)!")
+    return false
+end
+
+-- التحقق من إمكانية مهاجمة اللاعب
+local function canAttack(target)
+    if not target.Character then return false end
+    local humanoid = target.Character:FindFirstChild("Humanoid")
+    return humanoid and humanoid.Health > 0
+end
+
+-- التحقق من وجود اللاعب داخل المنطقة الآمنة
+local function isInSafeZone(position)
+    return position.X >= safeZoneMin.X and position.X <= safeZoneMax.X and
+           position.Z >= safeZoneMin.Z and position.Z <= safeZoneMax.Z
+end
+
+-- تحديث قائمة اللاعبين
+local function updatePlayerList()
+    PlayerList:ClearAllChildren() -- مسح القائمة الحالية
+
+    local players = game.Players:GetPlayers()
+    for i, target in ipairs(players) do
+        if target ~= player and canAttack(target) then
+            local rootPart = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+            if rootPart and not isInSafeZone(rootPart.Position) then
+                local playerButton = Instance.new("TextButton", PlayerList)
+                playerButton.Size = UDim2.new(1, -10, 0, 25)
+                playerButton.Position = UDim2.new(0, 5, 0, (i - 1) * 30)
+                playerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- لون داكن
+                playerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                playerButton.Font = Enum.Font.Gotham
+                playerButton.TextSize = 14
+                playerButton.Text = target.Name
+                playerButton.BorderSizePixel = 0
+
+                -- اختيار اللاعب عند النقر على الزر
+                playerButton.MouseButton1Click:Connect(function()
+                    targetPlayer = target
+                    SelectedPlayerText.Text = "اللاعب المحدد: " .. targetPlayer.Name
+                    highlight.Adornee = targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head")
+                    print("تم اختيار اللاعب: " .. targetPlayer.Name)
+                end)
+            end
+        end
+    end
+end
+
+-- الانتقال إلى اللاعب المستهدف وضربه
+local function attackTarget()
+    if not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        print("اللاعب المستهدف غير موجود أو غير صالح!")
+        return
+    end
+
+    if not ensureTool() then
+        print("الرجاء حمل أداة (Tool) أولاً!")
+        return
+    end
+
+    local tool = player.Character:FindFirstChildOfClass("Tool")
+    if not tool or not tool:FindFirstChild("Handle") then
+        print("الرجاء حمل أداة (Tool) أولاً!")
+        return
+    end
+
+    -- حفظ الموقع الأصلي
+    originalPosition = player.Character.HumanoidRootPart.CFrame
+
+    -- بدء الهجوم
+    local startTime = tick() -- وقت بدء الهجوم
+    local attackDuration = 2 -- مدة الهجوم (2 ثواني)
+
+    while tick() - startTime < attackDuration do
+        if not canAttack(targetPlayer) then
+            -- إذا مات اللاعب، نعود فورًا
+            player.Character.HumanoidRootPart.CFrame = originalPosition
+            print("اللاعب المستهدف مات، العودة إلى الموقع الأصلي.")
+            return
+        end
+
+        -- الانتقال إلى فوق رأس اللاعب المستهدف بمسافة متوسطة
+        local targetHead = targetPlayer.Character:FindFirstChild("Head")
+        if not targetHead then
+            print("لا يمكن العثور على رأس اللاعب المستهدف!")
+            return
+        end
+
+        local offset = Vector3.new(0, 10, 0) -- مسافة 10 وحدة فوق الرأس
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(targetHead.Position + offset)
+
+        -- تنفيذ الضربات
+        tool:Activate()
+        for _, part in ipairs(targetPlayer.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                firetouchinterest(tool.Handle, part, 0)
+                firetouchinterest(tool.Handle, part, 1)
+            end
+        end
+        wait(0.1) -- تأخير بسيط بين الضربات
+    end
+
+    -- إذا انتهت المدة ولم يمت اللاعب، نعود إلى الموقع الأصلي
+    player.Character.HumanoidRootPart.CFrame = originalPosition
+    print("انتهت مدة الهجوم، العودة إلى الموقع الأصلي.")
+end
+
+-- زر القتل
+KillButton.MouseButton1Click:Connect(function()
+    if not targetPlayer then
+        print("الرجاء اختيار لاعب أولاً!")
+        return
+    end
+
+    attackTarget()
+end)
+
+-- تحديث قائمة اللاعبين كل ثانية
+while true do
+    updatePlayerList()
+    wait(1) -- تحديث كل ثانية
+end
+
+-- تحديث قائمة اللاعبين عند تغيير اللاعبين
+game.Players.PlayerAdded:Connect(updatePlayerList)
+game.Players.PlayerRemoving:Connect(updatePlayerList)
+
+-- تحديث القائمة عند بدء التشغيل
+updatePlayerList()
