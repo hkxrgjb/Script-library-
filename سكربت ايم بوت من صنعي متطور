@@ -1,0 +1,200 @@
+-- ================================================= --
+--         Character Auto-Rotate Script (Final)      --
+-- ================================================= --
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- **متغيرات التتبع الرئيسية**
+local isTracking = false
+local closestTarget = nil
+local updateConnection = nil
+
+-- **متغيرات واجهة المستخدم والسحب (GUI)**
+local isDragging = false
+local dragStart = nil
+local initialPosition = nil
+local isActualDrag = false       -- متغير لتحديد السحب الفعلي
+local DRAG_THRESHOLD = 5         -- عتبة الحركة بالبكسل لاعتبارها سحباً
+
+-- === 1. وظيفة البحث عن أقرب لاعب ===
+local function findClosestPlayer()
+    local myCharacter = LocalPlayer.Character
+    if not myCharacter or not myCharacter:FindFirstChild("HumanoidRootPart") then
+        return nil
+    end
+
+    local myPosition = myCharacter.HumanoidRootPart.Position
+    local minDistance = math.huge
+    local target = nil
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local distance = (player.Character.HumanoidRootPart.Position - myPosition).Magnitude
+            if distance < minDistance then
+                minDistance = distance
+                target = player
+            end
+        end
+    end
+
+    return target
+end
+
+-- === 2. وظيفة التحديث المستمر لاستدارة الجسم ===
+local function updateCharacterRotation()
+    if isTracking and closestTarget and closestTarget.Character and closestTarget.Character:FindFirstChild("HumanoidRootPart") then
+        local myCharacter = LocalPlayer.Character
+        -- يجب التحقق من وجود الشخصية و RootPart في كل تحديث
+        if not myCharacter or not myCharacter:FindFirstChild("HumanoidRootPart") then 
+            isTracking = false
+            updateConnection:Disconnect()
+            updateConnection = nil
+            return 
+        end
+
+        local rootPart = myCharacter.HumanoidRootPart
+        local targetPosition = closestTarget.Character.HumanoidRootPart.Position
+        
+        local rootPosition = rootPart.CFrame.Position
+        
+        -- حساب متجه الاتجاه الأفقي
+        local direction = (targetPosition - rootPosition).Unit
+        local lookVector = Vector3.new(direction.X, 0, direction.Z).Unit
+        
+        -- تطبيق الاستدارة
+        local newCFrame = CFrame.lookAt(rootPosition, rootPosition + lookVector)
+        rootPart.CFrame = newCFrame
+    else
+        isTracking = false
+        if updateConnection then
+            updateConnection:Disconnect()
+            updateConnection = nil
+        end
+    end
+end
+
+-- === 3. وظيفة التبديل (Toggle) ===
+local function toggleTracking()
+    isTracking = not isTracking
+    print("Character Auto-Rotation Toggled: " .. tostring(isTracking))
+
+    if isTracking then
+        workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+        
+        closestTarget = findClosestPlayer()
+        
+        if closestTarget and LocalPlayer.Character then
+            if not updateConnection then
+                -- Heartbeat لتحديث حركة الجسم/الفيزياء
+                updateConnection = RunService.Heartbeat:Connect(updateCharacterRotation)
+            end
+        else
+            isTracking = false
+            print("No nearby player found or character missing to track for rotation.")
+        end
+    else
+        if updateConnection then
+            updateConnection:Disconnect()
+            updateConnection = nil
+        end
+    end
+end
+
+-- ================================================= --
+-- === 4. إعداد واجهة المستخدم (GUI) ===
+-- ================================================= --
+
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local ScreenGui = PlayerGui:FindFirstChild("AutoTrackGUI") or Instance.new("ScreenGui")
+ScreenGui.Name = "AutoTrackGUI"
+
+-- **الخطوة الحاسمة:** منع القائمة من الاختفاء عند موت اللاعب
+ScreenGui.ResetOnSpawn = false
+
+ScreenGui.Parent = PlayerGui
+
+local ToggleButton = ScreenGui:FindFirstChild("ToggleTrack") or Instance.new("TextButton")
+ToggleButton.Name = "ToggleTrack"
+ToggleButton.Text = "Toggle Auto-Rotate (OFF)"
+-- حجم وموقع جديدين: أصغر وفي أعلى اليسار
+ToggleButton.Size = UDim2.new(0, 150, 0, 40)
+ToggleButton.Position = UDim2.new(0, 20, 0, 20) 
+ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.SourceSans
+ToggleButton.TextSize = 16
+ToggleButton.Parent = ScreenGui
+
+-- ================================================= --
+-- === 5. وظائف السحب والنقر ===
+-- ================================================= --
+
+local function dragFunction(input)
+    if isDragging then
+        local delta = input.Position - dragStart
+        local distance = delta.Magnitude
+
+        -- فحص عتبة السحب
+        if distance > DRAG_THRESHOLD then
+            isActualDrag = true 
+            
+            -- تطبيق الموقع الجديد
+            local newX = initialPosition.X.Offset + delta.X
+            local newY = initialPosition.Y.Offset + delta.Y
+            
+            -- تحديد حدود الشاشة
+            local maxX = ScreenGui.AbsoluteSize.X - ToggleButton.AbsoluteSize.X
+            local maxY = ScreenGui.AbsoluteSize.Y - ToggleButton.AbsoluteSize.Y
+            
+            newX = math.clamp(newX, 0, maxX)
+            newY = math.clamp(newY, 0, maxY)
+            
+            ToggleButton.Position = UDim2.new(0, newX, 0, newY)
+        end
+    end
+end
+
+-- عند بدء الإدخال
+ToggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isDragging = true
+        dragStart = input.Position
+        initialPosition = ToggleButton.Position
+        UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter 
+    end
+end)
+
+-- عند إنهاء الإدخال
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if isDragging then
+            isDragging = false
+            UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+            isActualDrag = false
+        end
+    end
+end)
+
+-- ربط وظيفة التبديل بالنقر
+ToggleButton.MouseButton1Click:Connect(function()
+    -- يتم تفعيل الوظيفة فقط إذا لم يكن سحباً فعلياً
+    if not isActualDrag then 
+        toggleTracking()
+        
+        -- تحديث نص الزر
+        if isTracking then
+            ToggleButton.Text = "Toggle Auto-Rotate (ON)"
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+        else
+            ToggleButton.Text = "Toggle Auto-Rotate (OFF)"
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        end
+    end
+end)
+
+UserInputService.InputChanged:Connect(dragFunction)
+
+print("Character Auto-Rotate Script with Persistent GUI Loaded Successfully.")
